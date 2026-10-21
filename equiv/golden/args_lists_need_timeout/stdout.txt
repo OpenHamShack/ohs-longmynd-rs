@@ -1,0 +1,6 @@
+Flow: main
+ERROR: TS Timeout must be enabled when multiple frequencies are specified.
+Please refer to the longmynd manual page via:
+    man -l longmynd.1
+Flow: Main loop aborted, waiting for threads.
+Flow: All threads accounted for. Exiting cleanly.

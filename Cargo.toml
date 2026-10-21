@@ -1,0 +1,50 @@
+[workspace]
+members = [".", "equiv"]
+resolver = "2"
+
+[package]
+name = "longmynd"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+description = "Drop-in Rust port of BATC longmynd: MiniTiouner / PicoTuner DVB-S/S2 receiver"
+authors = ["Heather Lomond (longmynd)", "Brian Henderson (Rust port)"]
+publish = false
+
+[lib]
+name = "longmynd"
+path = "src/lib.rs"
+
+[[bin]]
+name = "longmynd"
+path = "src/main.rs"
+
+# rusb is the only USB dependency: libusb-1.0 underneath, as the C uses, so
+# device selection, interface claiming and the kernel-driver detach behave
+# the same. Linux links the distribution's libusb dynamically (the C does,
+# and packaging already Depends on libusb-1.0-0); Windows builds libusb from
+# source and links it statically, so longmynd.exe needs no DLL beside it.
+# Resolver 2 keeps the vendored feature out of the Linux build.
+# libloading: FTDI's D2XX library (ftd2xx.dll) is loaded at run time, so
+# the program starts and falls back to libusb without it, and so nothing
+# of FTDI's is linked into a GPL binary (src/d2xx.rs).
+[dependencies]
+libloading = "0.8"
+
+[target.'cfg(not(windows))'.dependencies]
+rusb = "0.9"
+libc = "0.2"
+signal-hook = { version = "0.3", default-features = false }
+
+[target.'cfg(windows)'.dependencies]
+rusb = { version = "0.9", features = ["vendored"] }
+ctrlc = "3"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+# A panic in any of the four threads stops the process, as a crash in the C
+# does, rather than leaving a receiver that has silently lost its TS thread.
+panic = "abort"

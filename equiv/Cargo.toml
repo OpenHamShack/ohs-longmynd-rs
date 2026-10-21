@@ -1,0 +1,16 @@
+[package]
+name = "longmynd-equiv"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+publish = false
+description = "Equivalence harness: longmynd-rs against the C longmynd on a simulated MiniTiouner"
+
+[dependencies]
+longmynd = { path = ".." }
+
+[build-dependencies]
+cc = "1"
+
+[dev-dependencies]
+sha2 = "0.10"

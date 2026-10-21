@@ -1,0 +1,209 @@
+=== s2: C vs Rust
+                C                                         longmynd-rs
+exit            43                                        43
+first lock (s)  1.5                                       1.4   <-- differs
+share locked    98%                                       99%   <-- differs
+MER dB          median 12.8 (0.0..14.1)                   median 11.7 (0.0..12.7)   <-- differs
+SR S/s          median 331649 (331649..331649)            median 331649 (331649..331649)
+carrier kHz     median 1255036 (1255035..1255036)         median 1255035 (1255035..1255035)   <-- differs
+names           GM4BRI, PlutoDVB2-0.5.16.7(F5OEO)         GM4BRI, PlutoDVB2-0.5.16.7(F5OEO)
+PIDs            256, 257                                  256, 257
+TS bytes        2081176                                   2107628   <-- differs
+TS CC errors    0                                         2   <-- differs
+
+I2C from start-up to scan start: identical (1013 transactions after collapsing polls)
+
+=== nosig: C vs Rust
+                C                                         longmynd-rs
+exit            43                                        43
+first lock (s)  never                                     never
+share locked    0%                                        0%
+MER dB          -                                         -
+SR S/s          -                                         -
+carrier kHz     -                                         -
+names           -                                         -
+PIDs            -                                         -
+TS bytes        1592                                      0   <-- differs
+TS CC errors    0                                         0
+
+I2C from start-up to scan start: identical (1013 transactions after collapsing polls)
+
+=== scan: C vs Rust
+                C                                         longmynd-rs
+exit            43                                        43
+first lock (s)  1.4                                       1.4
+share locked    99%                                       99%
+MER dB          median 14.8 (0.0..15.9)                   median 15.9 (0.0..16.8)   <-- differs
+SR S/s          median 331649 (331649..331649)            median 331649 (331649..331649)
+carrier kHz     median 1255035 (1255035..1255035)         median 1255035 (1255035..1255035)
+names           GM4BRI, PlutoDVB2-0.5.16.7(F5OEO)         GM4BRI, PlutoDVB2-0.5.16.7(F5OEO)
+PIDs            256, 257                                  256, 257
+TS bytes        2091000                                   2102612   <-- differs
+TS CC errors    0                                         1   <-- differs
+
+I2C from start-up to scan start: identical (1013 transactions after collapsing polls)
+
+=== scan2: C vs Rust
+                C                                         longmynd-rs
+exit            43                                        43
+first lock (s)  6.3                                       6.3
+share locked    88%                                       88%
+MER dB          median 15.8 (0.0..16.6)                   median 15.9 (0.0..16.5)   <-- differs
+SR S/s          median 331649 (331649..331649)            median 331649 (331649..331649)
+carrier kHz     median 1255035 (1255035..1255035)         median 1255035 (1255035..1255036)   <-- differs
+names           GM4BRI, PlutoDVB2-0.5.16.7(F5OEO)         GM4BRI, PlutoDVB2-0.5.16.7(F5OEO)
+PIDs            256, 257                                  256, 257
+TS bytes        1823008                                   1823868   <-- differs
+TS CC errors    3                                         2   <-- differs
+
+I2C from start-up to scan start: identical (1013 transactions after collapsing polls)
+
+=== fast-rs vs s2-c
+                C                                         longmynd-rs
+exit            43                                        43
+first lock (s)  1.5                                       1.3   <-- differs
+share locked    98%                                       99%   <-- differs
+MER dB          median 12.8 (0.0..14.1)                   median 15.9 (0.0..16.6)   <-- differs
+SR S/s          median 331649 (331649..331649)            median 331649 (331649..331649)
+carrier kHz     median 1255036 (1255035..1255036)         median 1255035 (1255035..1255036)   <-- differs
+names           GM4BRI, PlutoDVB2-0.5.16.7(F5OEO)         GM4BRI, PlutoDVB2-0.5.16.7(F5OEO)
+PIDs            256, 257                                  256, 257
+TS bytes        2081176                                   2103800   <-- differs
+TS CC errors    0                                         1   <-- differs
+
+I2C from start-up to scan start DIFFERS at transaction 38:
+  C:    d2 f1 50 82
+  Rust: d2 f1 13 00
+
+=== parse-rs vs s2-c
+                C                                         longmynd-rs
+exit            43                                        43
+first lock (s)  1.5                                       1.4   <-- differs
+share locked    98%                                       98%
+MER dB          median 12.8 (0.0..14.1)                   median 15.8 (0.0..16.6)   <-- differs
+SR S/s          median 331649 (331649..331649)            median 331649 (331649..331649)
+carrier kHz     median 1255036 (1255035..1255036)         median 1255035 (1255035..1255036)   <-- differs
+names           GM4BRI, PlutoDVB2-0.5.16.7(F5OEO)         GM4BRI, PlutoDVB2-0.5.16.7(F5OEO)
+PIDs            256, 257                                  256, 257
+TS bytes        2081176                                   2094300   <-- differs
+TS CC errors    0                                         2   <-- differs
+
+I2C from start-up to scan start: identical (1013 transactions after collapsing polls)
+
+=== tslat-rs vs s2-c
+                C                                         longmynd-rs
+exit            43                                        43
+first lock (s)  1.5                                       1.5
+share locked    98%                                       98%
+MER dB          median 12.8 (0.0..14.1)                   median 15.8 (0.0..16.3)   <-- differs
+SR S/s          median 331649 (331649..331649)            median 331649 (331649..331649)
+carrier kHz     median 1255036 (1255035..1255036)         median 1255035 (1255035..1255036)   <-- differs
+names           GM4BRI, PlutoDVB2-0.5.16.7(F5OEO)         GM4BRI, PlutoDVB2-0.5.16.7(F5OEO)
+PIDs            256, 257                                  256, 257
+TS bytes        2081176                                   2088856   <-- differs
+TS CC errors    0                                         8   <-- differs
+
+I2C from start-up to scan start: identical (1013 transactions after collapsing polls)
+
+=== start-up time (first MPSSE OUT -> scan start write), from the captures
+s2-c           start-up (first OUT -> scan start): 0.588 s, 5355 OUT transfers
+s2-rs          start-up (first OUT -> scan start): 0.596 s, 5411 OUT transfers
+scan-c         start-up (first OUT -> scan start): 0.596 s, 5421 OUT transfers
+scan-rs        start-up (first OUT -> scan start): 0.588 s, 5328 OUT transfers
+scan2-c        start-up (first OUT -> scan start): 0.593 s, 5347 OUT transfers
+scan2-rs       start-up (first OUT -> scan start): 0.587 s, 5301 OUT transfers
+fast-rs        start-up (first OUT -> scan start): 0.491 s, 1777 OUT transfers
+parse-rs       start-up (first OUT -> scan start): 0.596 s, 5422 OUT transfers
+tslat-rs       start-up (first OUT -> scan start): 0.590 s, 5330 OUT transfers
+
+=== MER/AGC by 5 s, CC error positions
+runs/s2-c
+    0s MER 13.1  AGC1 0      AGC2 410    pow_i 0    state ['1', '2', '4']
+    5s MER 13.1  AGC1 0.0    AGC2 432.0  pow_i 0.0  state ['4']
+   10s MER 12.8  AGC1 0.0    AGC2 423.5  pow_i 0.0  state ['4']
+   15s MER 13.0  AGC1 0.0    AGC2 416.5  pow_i 0.0  state ['4']
+   20s MER 12.8  AGC1 0.0    AGC2 417.0  pow_i 0.0  state ['4']
+   25s MER 12.7  AGC1 0.0    AGC2 404.0  pow_i 0.0  state ['4']
+   30s MER 12.5  AGC1 0.0    AGC2 432.0  pow_i 0.0  state ['4']
+   35s MER 12.5  AGC1 0.0    AGC2 431.0  pow_i 0.0  state ['4']
+  CC errors at byte offsets: []
+runs/s2-rs
+    0s MER 11.6  AGC1 0      AGC2 492    pow_i 0    state ['1', '2', '4']
+    5s MER 11.7  AGC1 0.0    AGC2 490.0  pow_i 0.0  state ['4']
+   10s MER 12.45 AGC1 0.0    AGC2 456.5  pow_i 0.0  state ['4']
+   15s MER 12.1  AGC1 0.0    AGC2 487.0  pow_i 0.0  state ['4']
+   20s MER 11.8  AGC1 0.0    AGC2 497.0  pow_i 0.0  state ['4']
+   25s MER 11.7  AGC1 0.0    AGC2 495.0  pow_i 0.0  state ['4']
+   30s MER 11.7  AGC1 0.0    AGC2 490.5  pow_i 0.0  state ['4']
+   35s MER 11.8  AGC1 0.0    AGC2 488.5  pow_i 0.0  state ['4']
+  CC errors at byte offsets: [(2480, '0%', 256), (1940196, '92%', 256)]
+runs/scan-c
+    0s MER 13.2  AGC1 0      AGC2 400    pow_i 0    state ['1', '2', '4']
+    5s MER 13.1  AGC1 0.0    AGC2 399.5  pow_i 0.0  state ['4']
+   10s MER 12.95 AGC1 0.0    AGC2 297.0  pow_i 0.0  state ['4']
+   15s MER 14.25 AGC1 0.0    AGC2 326.5  pow_i 0.0  state ['4']
+   20s MER 15.0  AGC1 0.0    AGC2 298.5  pow_i 0.0  state ['4']
+   25s MER 15.5  AGC1 0.0    AGC2 295.0  pow_i 0.0  state ['4']
+   30s MER 15.8  AGC1 0      AGC2 297    pow_i 0    state ['4']
+   35s MER 15.9  AGC1 0      AGC2 295    pow_i 0    state ['4']
+  CC errors at byte offsets: []
+runs/scan-rs
+    0s MER 15.8  AGC1 0      AGC2 299    pow_i 0    state ['1', '2', '4']
+    5s MER 16.0  AGC1 0      AGC2 297    pow_i 0    state ['4']
+   10s MER 15.9  AGC1 0.0    AGC2 297.0  pow_i 0.0  state ['4']
+   15s MER 16.0  AGC1 0.0    AGC2 297.0  pow_i 0.0  state ['4']
+   20s MER 15.9  AGC1 0.0    AGC2 298.0  pow_i 0.0  state ['4']
+   25s MER 15.8  AGC1 0.0    AGC2 298.5  pow_i 0.0  state ['4']
+   30s MER 15.8  AGC1 0.0    AGC2 298.0  pow_i 0.0  state ['4']
+   35s MER 15.8  AGC1 0.0    AGC2 298.0  pow_i 0.0  state ['4']
+  CC errors at byte offsets: [(1224, '0%', 256)]
+runs/scan2-c
+    0s MER 0.0   AGC1 0      AGC2 213    pow_i 278  state ['1']
+    5s MER 15.5  AGC1 0      AGC2 299    pow_i 0    state ['1', '2', '4']
+   10s MER 15.7  AGC1 0.0    AGC2 299.0  pow_i 0.0  state ['4']
+   15s MER 15.7  AGC1 0.0    AGC2 298.0  pow_i 0.0  state ['4']
+   20s MER 15.7  AGC1 0.0    AGC2 298.0  pow_i 0.0  state ['4']
+   25s MER 15.8  AGC1 0.0    AGC2 298.0  pow_i 0.0  state ['4']
+   30s MER 15.9  AGC1 0.0    AGC2 296.0  pow_i 0.0  state ['4']
+   35s MER 15.9  AGC1 0.0    AGC2 295.0  pow_i 0.0  state ['4']
+  CC errors at byte offsets: [(3920, '0%', 256), (12192, '1%', 0), (12380, '1%', 4096)]
+runs/scan2-rs
+    0s MER 0.0   AGC1 0.0    AGC2 241.0  pow_i 272.0 state ['1']
+    5s MER 15.9  AGC1 0      AGC2 297    pow_i 0    state ['1', '2', '4']
+   10s MER 15.9  AGC1 0.0    AGC2 297.0  pow_i 0.0  state ['4']
+   15s MER 15.8  AGC1 0.0    AGC2 294.0  pow_i 0.0  state ['4']
+   20s MER 15.9  AGC1 0      AGC2 295    pow_i 0    state ['4']
+   25s MER 15.8  AGC1 0.0    AGC2 296.0  pow_i 0.0  state ['4']
+   30s MER 15.9  AGC1 0.0    AGC2 296.0  pow_i 0.0  state ['4']
+   35s MER 15.9  AGC1 0.0    AGC2 296.0  pow_i 0.0  state ['4']
+  CC errors at byte offsets: [(2524, '0%', 256), (11736, '1%', 257)]
+runs/fast-rs
+    0s MER 16.200000000000003 AGC1 0.0    AGC2 298.0  pow_i 0.0  state ['1', '2', '4']
+    5s MER 16.1  AGC1 0.0    AGC2 297.0  pow_i 0.0  state ['4']
+   10s MER 15.9  AGC1 0.0    AGC2 298.0  pow_i 0.0  state ['4']
+   15s MER 15.9  AGC1 0.0    AGC2 297.0  pow_i 0.0  state ['4']
+   20s MER 15.850000000000001 AGC1 0.0    AGC2 297.0  pow_i 0.0  state ['4']
+   25s MER 15.7  AGC1 0.0    AGC2 298.0  pow_i 0.0  state ['4']
+   30s MER 15.8  AGC1 0.0    AGC2 296.0  pow_i 0.0  state ['4']
+   35s MER 15.8  AGC1 0.0    AGC2 296.0  pow_i 0.0  state ['4']
+  CC errors at byte offsets: [(2600, '0%', 256)]
+runs/parse-rs
+    0s MER 15.7  AGC1 0      AGC2 296    pow_i 0    state ['1', '2', '4']
+    5s MER 15.8  AGC1 0.0    AGC2 296.0  pow_i 0.0  state ['4']
+   10s MER 15.8  AGC1 0.0    AGC2 297.0  pow_i 0.0  state ['4']
+   15s MER 15.8  AGC1 0      AGC2 297    pow_i 0    state ['4']
+   20s MER 15.8  AGC1 0.0    AGC2 297.0  pow_i 0.0  state ['4']
+   25s MER 15.7  AGC1 0.0    AGC2 296.0  pow_i 0.0  state ['4']
+   30s MER 15.8  AGC1 0.0    AGC2 296.0  pow_i 0.0  state ['4']
+   35s MER 15.8  AGC1 0.0    AGC2 296.0  pow_i 0.0  state ['4']
+  CC errors at byte offsets: [(3300, '0%', 256), (1035608, '49%', 256)]
+runs/tslat-rs
+    0s MER 15.5  AGC1 0      AGC2 297    pow_i 0    state ['1', '2', '4']
+    5s MER 15.6  AGC1 0.0    AGC2 295.0  pow_i 0.0  state ['4']
+   10s MER 15.8  AGC1 0.0    AGC2 296.0  pow_i 0.0  state ['4']
+   15s MER 15.9  AGC1 0.0    AGC2 297.0  pow_i 0.0  state ['4']
+   20s MER 15.9  AGC1 0.0    AGC2 298.5  pow_i 0.0  state ['4']
+   25s MER 15.9  AGC1 0      AGC2 299    pow_i 0    state ['4']
+   30s MER 15.8  AGC1 0.0    AGC2 295.0  pow_i 0.0  state ['4']
+   35s MER 15.8  AGC1 0.0    AGC2 295.0  pow_i 0.0  state ['4']
+  CC errors at byte offsets: [(3184, '0%', 256), (4500, '0%', 0), (4688, '0%', 4096), (5252, '0%', 257), (7132, '0%', 256), (13336, '1%', 257), (14088, '1%', 0), (14276, '1%', 4096)]

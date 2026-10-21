@@ -1,0 +1,9 @@
+/target/
+*.swp
+/dist/
+
+# hardware test captures and TS: large, kept on disk (HANDOVER)
+/hwruns/**/usb.pcapng
+/hwruns/**/ts.ts
+/hwruns/**/*.jsonl
+__pycache__/

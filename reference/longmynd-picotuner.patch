@@ -1,0 +1,181 @@
+PicoTuner (USB) support for BATC longmynd - applied by mkimage.sh after it
+clones https://github.com/BritishAmateurTelevisionClub/longmynd, and by
+openhamshack-apply-update to the clone already in /opt/longmynd on an existing box.
+
+The PicoTuner's USB firmware (https://github.com/g4eml/PicoTuner, v0.12)
+imitates the FT2232H's MPSSE commands, so longmynd drives it unchanged once it
+will open 2E8A:BA2C as well as 0403:6010, and - when the firmware reports
+bcdDevice 0x0102 - sets the STV0910 to serial TS output. Upstream longmynd
+(last change 2022) does neither; BATC carry the change in their own copies:
+portsdown5 src/longmynd (commit b5a2bfb, 7 October 2025), portsdown4 and
+ryde-build. This is that change and nothing else from those copies (they also
+add a search-algorithm option and an SR offset correction, which would change
+how a MiniTiouner behaves on this box), in upstream's formatting, and without
+their reuse of err for the descriptor read, which could hide a failed claim.
+
+The daemon recognises a patched binary by its "FTDI/Pico init" message.
+
+patch -p1 inside the longmynd tree.
+
+diff -ruN a/ftdi.c b/ftdi.c
+--- a/ftdi.c	2026-10-03 23:12:36.491350044 +0100
++++ b/ftdi.c	2026-10-03 23:13:05.472213619 +0100
+@@ -40,6 +40,10 @@
+ 
+ #define FTDI_VID 0x0403
+ #define FTDI_PID 0x6010
++/* BATC PicoTuner (g4eml/PicoTuner firmware): a Raspberry Pi Pico that speaks the */
++/* same MPSSE subset as the FT2232H, under the Raspberry Pi VID                    */
++#define PICO_VID 0x2E8A
++#define PICO_PID 0xBA2C
+ 
+ #define FTDI_NUM_TRIES 10
+ #define FTDI_STOP_START_REPEATS 4
+@@ -512,16 +516,16 @@
+ /* -------------------------------------------------------------------------------------------------- */
+     uint8_t err;
+ 
+-    printf("Flow: FTDI init\n");
++    printf("Flow: FTDI/Pico init\n");
+ 
+-    err=ftdi_usb_init_i2c(usb_bus, usb_addr, FTDI_VID, FTDI_PID);
++    err=ftdi_usb_init_i2c(usb_bus, usb_addr, FTDI_VID, FTDI_PID, PICO_VID, PICO_PID);
+     if (err==ERROR_NONE) err=ftdi_usb_set_mpsse_mode_i2c();
+-    if (err==ERROR_NONE) err=ftdi_usb_init_ts(usb_bus, usb_addr, FTDI_VID, FTDI_PID);
++    if (err==ERROR_NONE) err=ftdi_usb_init_ts(usb_bus, usb_addr, FTDI_VID, FTDI_PID, PICO_VID, PICO_PID);
+     if (err==ERROR_NONE) err=ftdi_usb_set_mpsse_mode_ts();
+     if (err==ERROR_NONE) err=ftdi_setup_ftdi_io();
+     if (err==ERROR_NONE) err=ftdi_nim_reset();
+     
+-    if (err!=ERROR_NONE) printf("ERROR: FTDI init\n");
++    if (err!=ERROR_NONE) printf("ERROR: FTDI/Pico init\n");
+ 
+     return err;
+ }
+diff -ruN a/ftdi_usb.c b/ftdi_usb.c
+--- a/ftdi_usb.c	2026-10-03 23:12:36.495350162 +0100
++++ b/ftdi_usb.c	2026-10-03 23:13:05.472213619 +0100
+@@ -34,6 +34,7 @@
+ #include "errors.h"
+ #include "ftdi_usb.h"
+ #include "ftdi.h"
++#include "stv0910.h"
+ 
+ /* -------------------------------------------------------------------------------------------------- */
+ /* ----------------- DEFINES ------------------------------------------------------------------------ */
+@@ -243,7 +244,7 @@
+ }
+ 
+ /* -------------------------------------------------------------------------------------------------- */
+-static uint8_t ftdi_usb_init(libusb_context **usb_context_ptr, libusb_device_handle **usb_device_handle_ptr, int interface_num, uint8_t usb_bus, uint8_t usb_addr, uint16_t vid, uint16_t pid) {
++static uint8_t ftdi_usb_init(libusb_context **usb_context_ptr, libusb_device_handle **usb_device_handle_ptr, int interface_num, uint8_t usb_bus, uint8_t usb_addr, uint16_t vid, uint16_t pid, uint16_t altvid, uint16_t altpid) {
+ /* -------------------------------------------------------------------------------------------------- */
+ /* initialise the usb device of choice (or via vid/pid if no USB selected)                            */
+ /* return : error code                                                                                */
+@@ -273,7 +274,8 @@
+     /* now we need to decide if we are opening by VID and PID or by device number */
+     if ((err==ERROR_NONE) && (usb_bus==0) && (usb_addr==0)) {
+         /* if we are using vid and pid it is easy */
+-        if ((*usb_device_handle_ptr = libusb_open_device_with_vid_pid(*usb_context_ptr, vid, pid))==NULL) {
++        if ((*usb_device_handle_ptr = libusb_open_device_with_vid_pid(*usb_context_ptr, vid, pid))==NULL &&
++            (*usb_device_handle_ptr = libusb_open_device_with_vid_pid(*usb_context_ptr, altvid, altpid))==NULL) {
+             printf("ERROR: Unable to open device with VID and PID\n");
+             printf("       Is the USB cable plugged in?\n");
+             err=ERROR_FTDI_USB_VID_PID;
+@@ -306,7 +308,8 @@
+             /* some of it we have to do looking in the device descriptor */
+             error_code=libusb_get_device_descriptor(usb_candidate_device, &usb_descriptor);
+             /* if we have found our one then we can start using it */
+-            if ((usb_descriptor.idVendor==vid) && (usb_descriptor.idProduct==pid)) {
++            if (((usb_descriptor.idVendor==vid) && (usb_descriptor.idProduct==pid)) ||
++                ((usb_descriptor.idVendor==altvid) && (usb_descriptor.idProduct==altpid))) {
+                 /* first we open it */
+                 error_code=libusb_open(usb_candidate_device, usb_device_handle_ptr);
+                 if (error_code==0) printf("      Status: successfully opened USB Device %i,%i\n",
+@@ -339,15 +342,23 @@
+         }
+     }
+ 
++    /* A PicoTuner reading the NIM's TS one bit wide says so with bcdDevice 0x0102 (0x0101 is */
++    /* parallel, like the FTDI); the demodulator must then be told to send serial TS          */
++    if (err==ERROR_NONE) {
++        struct libusb_device_descriptor opened;
++        if (libusb_get_device_descriptor(libusb_get_device(*usb_device_handle_ptr), &opened)==0)
++            stv0910_serialTS = (opened.idVendor==altvid) && (opened.idProduct==altpid) && (opened.bcdDevice==0x0102);
++    }
++
+     return err;
+ }
+ 
+-uint8_t ftdi_usb_init_i2c(uint8_t usb_bus, uint8_t usb_addr, uint16_t vid, uint16_t pid) {
+-    return ftdi_usb_init(&usb_context_i2c, &usb_device_handle_i2c, 0, usb_bus, usb_addr, vid, pid);
++uint8_t ftdi_usb_init_i2c(uint8_t usb_bus, uint8_t usb_addr, uint16_t vid, uint16_t pid, uint16_t altvid, uint16_t altpid) {
++    return ftdi_usb_init(&usb_context_i2c, &usb_device_handle_i2c, 0, usb_bus, usb_addr, vid, pid, altvid, altpid);
+ }
+ 
+-uint8_t ftdi_usb_init_ts(uint8_t usb_bus, uint8_t usb_addr, uint16_t vid, uint16_t pid) {
+-    return ftdi_usb_init(&usb_context_ts, &usb_device_handle_ts, 1, usb_bus, usb_addr, vid, pid);
++uint8_t ftdi_usb_init_ts(uint8_t usb_bus, uint8_t usb_addr, uint16_t vid, uint16_t pid, uint16_t altvid, uint16_t altpid) {
++    return ftdi_usb_init(&usb_context_ts, &usb_device_handle_ts, 1, usb_bus, usb_addr, vid, pid, altvid, altpid);
+ }
+ 
+ /* -------------------------------------------------------------------------------------------------- */
+diff -ruN a/ftdi_usb.h b/ftdi_usb.h
+--- a/ftdi_usb.h	2026-10-03 23:12:36.495350162 +0100
++++ b/ftdi_usb.h	2026-10-03 23:13:05.472213619 +0100
+@@ -35,8 +35,8 @@
+ uint8_t ftdi_usb_set_mpsse_mode_i2c(void);
+ uint8_t ftdi_usb_set_mpsse_mode_ts(void);
+ uint8_t ftdi_usb_ts_read(uint8_t *, uint16_t *, uint32_t);
+-uint8_t ftdi_usb_init_i2c(uint8_t, uint8_t, uint16_t, uint16_t);
+-uint8_t ftdi_usb_init_ts(uint8_t, uint8_t, uint16_t, uint16_t);
++uint8_t ftdi_usb_init_i2c(uint8_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t);
++uint8_t ftdi_usb_init_ts(uint8_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t);
+ 
+ #endif
+ 
+diff -ruN a/minitiouner.rules b/minitiouner.rules
+--- a/minitiouner.rules	2026-10-03 23:12:36.503350401 +0100
++++ b/minitiouner.rules	2026-10-03 23:13:05.472213619 +0100
+@@ -5,3 +5,5 @@
+ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", ATTRS{product}=="USB <-> NIM tuner", MODE:="0666"
+ # Minitiouner Express uses different product string
+ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", ATTRS{product}=="MiniTiouner-Express", MODE:="0666"
++# BATC PicoTuner on USB (g4eml/PicoTuner firmware) uses the Raspberry Pi VID
++SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="ba2c", MODE:="0666"
+diff -ruN a/stv0910.c b/stv0910.c
+--- a/stv0910.c	2026-10-03 23:12:36.499350281 +0100
++++ b/stv0910.c	2026-10-03 23:13:05.472213619 +0100
+@@ -35,6 +35,8 @@
+ #include "errors.h"
+ #include "stv0910_regs_init.h"
+ 
++uint8_t stv0910_serialTS = 0;
++
+ /* -------------------------------------------------------------------------------------------------- */
+ /* ----------------- ROUTINES ----------------------------------------------------------------------- */
+ /* -------------------------------------------------------------------------------------------------- */
+@@ -697,6 +699,12 @@
+     }        
+     while (STV0910DefVal[i++].reg!=RSTV0910_TSTTSRS);
+ 
++    /* a PicoTuner in serial TS mode: the register defaults above are for parallel */
++    if (stv0910_serialTS) {
++        if (err==ERROR_NONE) err=stv0910_write_reg(RSTV0910_P1_TSCFGH, 0x40);
++        if (err==ERROR_NONE) err=stv0910_write_reg(RSTV0910_P2_TSCFGH, 0x40);
++    }
++
+     /* finally (from ST example code) reset the LDPC decoder */
+     if (err==ERROR_NONE) err=stv0910_write_reg(RSTV0910_TSTRES0, 0x80);
+     if (err==ERROR_NONE) err=stv0910_write_reg(RSTV0910_TSTRES0, 0x00);
+diff -ruN a/stv0910.h b/stv0910.h
+--- a/stv0910.h	2026-10-03 23:12:36.503350401 +0100
++++ b/stv0910.h	2026-10-03 23:13:05.472213619 +0100
+@@ -66,5 +66,7 @@
+ uint8_t stv0910_setup_search_params(uint8_t);
+ uint8_t stv0910_setup_clocks();
+ 
++extern uint8_t stv0910_serialTS;
++
+ #endif
+ 

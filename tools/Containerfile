@@ -1,0 +1,20 @@
+# The one toolchain longmynd-rs is built and tested with (tools/build.sh).
+#
+# Debian 12 (bookworm, glibc 2.36) rather than 13: a Linux binary links the
+# glibc of the machine that built it and refuses to start on anything older,
+# and OpenHamShack Desktop's floor is Debian 12. Built here it runs on 12 and on
+# everything newer, including the Debian 13 appliance.
+#
+# libusb-1.0-0-dev: the Linux binary links the distribution's libusb
+# dynamically, exactly as the C longmynd does, so it gets the distribution's
+# fixes and the packaging Depends line stays the same.
+# mingw-w64 + the windows-gnu target: longmynd.exe is cross-compiled here
+# with libusb built from source and linked statically (rusb's "vendored"
+# feature), so the .exe has no DLL to ship beside it.
+# pkg-config: how libusb1-sys finds the system libusb on Linux.
+FROM docker.io/library/rust:1-bookworm
+RUN apt-get update -qq \
+ && apt-get install -y -qq --no-install-recommends \
+        libusb-1.0-0-dev pkg-config mingw-w64 \
+ && rm -rf /var/lib/apt/lists/* \
+ && rustup target add x86_64-pc-windows-gnu

@@ -1,0 +1,4 @@
+     0.000 libusb_init -> 0
+     0.000 libusb_set_option log_level=info
+     0.000 open_device_with_vid_pid 0403:6010 -> NULL
+     0.000 open_device_with_vid_pid 2e8a:ba2c -> NULL

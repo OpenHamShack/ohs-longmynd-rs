@@ -1,0 +1,6 @@
+Flow: main
+ERROR: Freq (100000) must be >= 144 MHz
+Please refer to the longmynd manual page via:
+    man -l longmynd.1
+Flow: Main loop aborted, waiting for threads.
+Flow: All threads accounted for. Exiting cleanly.

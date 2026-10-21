@@ -1,0 +1,41 @@
+Flow: main
+      Status: Main Frequency=146500 KHz
+              Main Symbol Rate=125 KSymbols/s
+              Using First Minitiouner detected on USB
+              Main TS output to FIFO=longmynd_main_ts
+              Main Status output to FIFO={dir}/status
+              Main refers to TOP F-Type
+              TS Timeout Period =5000 milliseconds
+      Status: opened fifo ok
+Flow: FTDI/Pico init
+Flow: FTDI USB init
+Flow: FTDI set mpsse mode
+Flow: FTDI USB init
+Flow: FTDI set mpsse mode
+Flow: FTDI setup io
+      Status: MPSSE Synched AA FA
+Flow: FTDI nim reset
+Flow: FTDI GPIO Write: pin 0 -> value 0
+Flow: FTDI GPIO Write: pin 0 -> value 1
+Flow: NIM init
+Flow: STV0910 init
+Flow: stv0910 init regs
+      Status: STV0910 MID = 0x51, DID = 0x20
+Flow: STV0910 set MCLK
+Flow: Setup equlaizers 1
+Flow: Setup carrier loop 1
+Flow: Setup timing loop 1
+Flow: Tuner init
+Flow: Tuner cal lowpass
+Flow: Tuner set freq
+Flow: Tuner set freq
+      Status: tuner:0, f_vco=0x23c440, icp=0x0, f=0x11111, n=0x9c,
+              rdiv=0x1, p=0x3, freq=146500, cfhf=<past the table>
+Flow: LNA init 1
+      Status: found new NIM with LNAs
+Flow: LNA init 2
+      Status: found new NIM with LNAs
+Flow: FTDI GPIO Write: pin 4 -> value 0
+Flow: STV0910 start scan
+Flow: Main loop aborted, waiting for threads.
+Flow: All threads accounted for. Exiting cleanly.
